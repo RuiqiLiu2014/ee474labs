@@ -10,13 +10,20 @@
 
 
 // TODO: Define toggle interval in timer ticks (e.g., 1 second)
-#define LED_TOGGLE_INTERVAL ________
+#define LED_TOGGLE_INTERVAL 1000
 
 
 // TODO: Define TIMER_INCREMENT_MODE and TIMER_ENABLE macros
-// #define TIMER_INCREMENT_MODE ...
-// #define TIMER_ENABLE ...
+#define TIMER_INCREMENT_MODE (1 << 30)
+#define TIMER_ENABLE (1 << 31)
 
+#define TIMERG0_474BASE     0x6001F000
+
+
+#define TIMG0_474T0CONFIG   ((volatile uint32_t *)(TIMERG0_474BASE + 0))
+#define TIMG0_474T0LO       ((volatile uint32_t *)(TIMERG0_474BASE + 4))
+#define TIMG0_474T0HI       ((volatile uint32_t *)(TIMERG0_474BASE + 8))
+#define TIMG0_474T0UPDATE   ((volatile uint32_t *)(TIMERG0_474BASE + 12))
 
 void setup() {
   // TODO: Set GPIO_PIN function to GPIO using MUX macro
@@ -33,19 +40,19 @@ void setup() {
 
 
   // TODO: Optionally apply a clock divider
-  // timer_config |= ...;
+  timer_config |= (80 << 13);
 
 
   // TODO: Set increment mode and enable timer
-  // timer_config |= ...;
+  timer_config |= TIMER_INCREMENT_MODE | TIMER_ENABLE;
 
 
   // TODO: Write config to timer register
-  // *((volatile uint32_t *)...) = timer_config;
+  *((volatile uint32_t *)TIMG0_474T0CONFIG) = timer_config;
 
 
   // TODO: Trigger a timer update to load settings
-  // *((volatile uint32_t *)...) = 1;
+  *((volatile uint32_t *)TIMG0_474T0UPDATE) = 1;
 }
 
 
@@ -56,18 +63,18 @@ void loop() {
 
   // TODO: Read current timer value
   uint32_t current_time = 0;
-  // current_time = *((volatile uint32_t *)...);
+  current_time = *((volatile uint32_t *)TIMG0_474T0LO);
 
 
   // TODO: Check if toggle interval has passed
   if ((current_time - last_toggle_time) >= LED_TOGGLE_INTERVAL) {
     // TODO: Read current GPIO output state
     uint32_t gpio_out = 0;
-    // gpio_out = *((volatile uint32_t *)...);
+    gpio_out = *((volatile uint32_t *)GPIO_OUT_REG);
 
 
     // TODO: Toggle GPIO_PIN using XOR
-    // *((volatile uint32_t *)...) = gpio_out ^ ...;
+    *((volatile uint32_t *)GPIO_OUT_REG) = gpio_out ^ (1 << GPIO_PIN);
 
 
     // TODO: Update last_toggle_time
@@ -76,6 +83,6 @@ void loop() {
 
 
   // TODO: Refresh timer counter value
-  // *((volatile uint32_t *)...) = 1;
+  *((volatile uint32_t *)GPIO_OUT_REG) = 1;
 }
 
