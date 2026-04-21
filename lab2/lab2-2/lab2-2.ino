@@ -1,3 +1,11 @@
+// Filename: lab2-2.ino
+// Author: Ruiqi Liu, Hailey Yuan
+// Date: 04/20/2026
+// Description: Measures times of direct register access and Arduino library functions.
+// Lab 2 step 2
+
+// Gemini-909 (no debugging needed)
+
 #include "driver/gpio.h"
 #include "soc/io_mux_reg.h"
 #include "soc/gpio_reg.h"

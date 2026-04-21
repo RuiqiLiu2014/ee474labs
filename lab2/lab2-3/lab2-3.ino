@@ -1,3 +1,11 @@
+// Filename: lab2-3.ino
+// Author: Ruiqi Liu, Hailey Yuan
+// Date: 04/20/2026
+// Description: Blinks an LED using direct register access for toggling and tracking time.
+// Lab 2 step 3 (part 2)
+
+// Gemini-909 (no debugging needed)
+
 #include "driver/gpio.h"
 #include "soc/io_mux_reg.h"
 #include "soc/gpio_reg.h"
@@ -40,6 +48,8 @@ void setup() {
     TIMG_T0CONFIG_REG |= ((uint32_t)1 << 31);
 }
 
+// Function: delayTimer
+// Description: Creates a blocking delay.
 void delayTimer(uint32_t delay_us) {
     // Trigger an update to copy the current running timer value to TIMG_T0LO_REG
     TIMG_T0UPDATE_REG |= 1; 
