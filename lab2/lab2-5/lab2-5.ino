@@ -5,7 +5,7 @@
 // the photoresistor passes a threshold.
 // Lab 2 step 5 (part 4)
 
-// Gemini-909 (no debugging needed)
+// Gemini-908 (no debugging needed)
 
 const int photoresistorPin = 7; // Analog input pin connected to the voltage divider
 const int buzzerPin = 5;         // Digital output pin connected to the buzzer
@@ -60,6 +60,7 @@ void loop() {
     if (elapsedTime < 250) {
       if (currentSegment != 1) {
         currentSegment = 1;
+        ledcDetach(buzzerPin);
         ledcAttach(buzzerPin, 500, resolution);
         ledcWrite(buzzerPin, dutyCycle);
       }
@@ -68,6 +69,7 @@ void loop() {
     else if (elapsedTime < 500) {
       if (currentSegment != 2) {
         currentSegment = 2;
+        ledcDetach(buzzerPin);
         ledcAttach(buzzerPin, 1000, resolution);
         ledcWrite(buzzerPin, dutyCycle);
       }
@@ -76,6 +78,7 @@ void loop() {
     else if (elapsedTime < 750) {
       if (currentSegment != 3) {
         currentSegment = 3;
+        ledcDetach(buzzerPin);
         ledcAttach(buzzerPin, 2000, resolution);
         ledcWrite(buzzerPin, dutyCycle);
       }
