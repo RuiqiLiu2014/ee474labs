@@ -6,7 +6,7 @@
 
 // Gemini-909 (no debugging needed)
 
-const int photoresistorPin = 34; // Analog input pin connected to the voltage divider
+const int photoresistorPin = 7; // Analog input pin connected to the voltage divider
 const int ledPin = 5;            // Digital output pin connected to the LED
 
 // PWM Properties

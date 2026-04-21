@@ -7,7 +7,7 @@
 
 // Gemini-909 (no debugging needed)
 
-const int photoresistorPin = 34; // Analog input pin connected to the voltage divider
+const int photoresistorPin = 7; // Analog input pin connected to the voltage divider
 const int buzzerPin = 5;         // Digital output pin connected to the buzzer
 
 // Light threshold: adjust this value based on ambient lighting conditions
