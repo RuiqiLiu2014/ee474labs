@@ -1,3 +1,11 @@
+// Filename: lab2-4.ino
+// Author: Ruiqi Liu, Hailey Yuan
+// Date: 04/20/2026
+// Description: Plays a buzzing sound depending on the photoresistor reading.
+// Lab 2 step 4 (part 3)
+
+// Gemini-909 (no debugging needed)
+
 const int photoresistorPin = 34; // Analog input pin connected to the voltage divider
 const int ledPin = 5;            // Digital output pin connected to the LED
 

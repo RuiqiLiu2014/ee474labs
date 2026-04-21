@@ -1,3 +1,12 @@
+// Filename: lab2-5.ino
+// Author: Ruiqi Liu, Hailey Yuan
+// Date: 04/20/2026
+// Description: Plays a buzzing frequency once once the light level read by
+// the photoresistor passes a threshold.
+// Lab 2 step 5 (part 4)
+
+// Gemini-909 (no debugging needed)
+
 const int photoresistorPin = 34; // Analog input pin connected to the voltage divider
 const int buzzerPin = 5;         // Digital output pin connected to the buzzer
 
