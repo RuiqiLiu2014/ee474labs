@@ -1,0 +1,41 @@
+// Filename: lab2-1.ino
+// Author: Ruiqi Liu, Hailey Yuan
+// Date: 04/20/2026
+// Description: Blinks an LED using direct register access.
+// Lab 2 step 1
+
+// Gemini-909 (no debugging needed)
+
+#include "driver/gpio.h"
+#include "soc/io_mux_reg.h"
+#include "soc/gpio_reg.h"
+#include "soc/gpio_periph.h"
+#define GPIO_PIN 5 // GPIO5
+void setup() {
+  // This predefined macro sets the functionality of a specified pin (to UART, SPI, 
+  // GPIO, etc). Here we are setting pin 5 to be a general purpose input/output 
+  // pin.
+  PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[GPIO_PIN], PIN_FUNC_GPIO);
+  // ===============> TODO:
+  // Write code here (1-3 lines) to mark pin 5 as output
+  // using the GPIO_ENABLE_REG macro
+  *(volatile uint32_t *)GPIO_ENABLE_REG |= (1 << GPIO_PIN);
+}
+
+void loop() {
+  // ===============> TODO:
+  // Turn LED on (set corresponding bit in GPIO output register)
+  // Write code here (1-3 lines) to mark pin 5 as HIGH output
+  // using the GPIO_OUT_REG macro
+  *(volatile uint32_t *)GPIO_OUT_REG |= (1 << GPIO_PIN);
+  // Wait for 1 second
+  delay(1000);
+
+  // ===============> TODO:
+  // Turn LED off (clear corresponding bit in GPIO output register)
+  // Write code here (1-3 lines) to mark pin 5 as LOW output
+  // using the GPIO_OUT_REG macro
+  *(volatile uint32_t *)GPIO_OUT_REG &= ~(1 << GPIO_PIN);
+  // Wait for 1 second
+  delay(1000);
+}
