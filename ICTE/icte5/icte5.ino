@@ -5,12 +5,14 @@ void toggleLED2(void *p);
 #define STATE_READY     1
 #define STATE_WAITING   2
 #define STATE_INACTIVE  3
+#define STATE_SLEEP     4
 
 typedef struct TCBStruct {
-  void (*ftpr)(void *p); // function pointer
+  void (*fptr)(void *p); // function pointer
   void *arg_ptr; // argument pointer
   unsigned short int state; // task state
-  unsigned int delay; // sleeeeeeep delay
+  unsigned long delay; // sleeeeeeep delay
+  unsigned long interval;
 } TCBStruct;
 
 const int ledPin1 = 37;
@@ -36,37 +38,42 @@ void setup() {
   TaskList[0].arg_ptr = NULL;
   TaskList[0].state = STATE_READY;
   TaskList[0].delay = 0;
+  TaskList[0].interval = 1000;
   TaskList[1].fptr = toggleLED2;
   TaskList[1].arg_ptr = NULL;
   TaskList[1].state = STATE_READY;
   TaskList[1].delay = 0;
+  TaskList[1].interval = 1500;
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  unsigned long now = millis();
+
   for (int i = 0; i < 2; i++) {
+    if (TaskList[i].state == STATE_SLEEPING && now >= TaskList[i].delay) {
+      TaskList[i].state = STATE_READY;    // wake up
+    }
     if (TaskList[i].state == STATE_READY) {
-      TaskList[i].fptr(TaskList[i].arg_ptr);   // dispatch the task
+      TaskList[i].fptr(TaskList[i].arg_ptr);
     }
   }
 }
 
 void toggleLED1(void *p) {
-  unsigned long currentTime = millis();
-  if (currentTime - lastTime37 >= 1000) {
-    state37 = !state37;
-    digitalWrite(ledPin1, state37);
-    lastTime37 = currentTime;
-  }
+  state37 = !state37;
+  digitalWrite(ledPin1, state37);
+  sleep(0, TaskList[0].interval);
 }
 
 void toggleLED2(void *p) {
-  unsigned long currentTime = millis();
-  if (currentTime - lastTime38 >= 2000) {
-    state38 = !state38;
-    digitalWrite(ledPin2, state38);
-    lastTime38 = currentTime;
-  }
+  state38 = !state38;
+  digitalWrite(ledPin2, state38);
+  sleep(1, TaskList[1].interval);
+}
+
+void sleep(int taskIndex, unsigned long d_ms) {
+  TaskList[taskIndex].state = STATE_SLEEPING;
+  TaskList[taskIndex].delay = millis() + d_ms;   // absolute wake time
 }
 
 // void toggleLED(int pin, unsigned long interval, unsigned long &lastTime, bool &state) {
