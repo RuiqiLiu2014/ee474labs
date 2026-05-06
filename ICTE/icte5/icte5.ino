@@ -1,3 +1,8 @@
+// Filename: icte5.ino
+// Author: Hailey Yuan, Ruiqi Liu
+// Date: 05/06/2026
+// Description: this file creates a TCB scheduler that blinks two LEDs at different frequencies.
+
 void toggleLED1(void *p);
 void toggleLED2(void *p);
 
