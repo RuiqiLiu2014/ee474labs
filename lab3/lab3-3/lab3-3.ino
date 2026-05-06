@@ -70,7 +70,7 @@ void setup() {
   lcd.print("BLE Starting...");
 
   // =========> Initialize BLE
-  BLEDevice::init("MyESP32"); // Name that will appear in LightBlue app
+  BLEDevice::init("whuck"); // Name that will appear in LightBlue app
   BLEServer *pServer = BLEDevice::createServer();
   BLEService *pService = pServer->createService(SERVICE_UUID);
   BLECharacteristic *pCharacteristic = pService->createCharacteristic(
