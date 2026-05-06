@@ -23,6 +23,9 @@
 // Ensure that the "LiquidCrystal_I2C" library by Frank de Brabander is installed
 #include <LiquidCrystal_I2C.h>
 
+#define SDA_PIN 4
+#define SCL_PIN 5
+
 LiquidCrystal_I2C lcd(0x27, 16, 2); // Initialize the LCD
 
 // --- I2C Constants ---
@@ -71,10 +74,10 @@ void sendByte(uint8_t value, bool isData) {
 
 void setup() {
   Serial.begin(115200);
-  Wire.begin();
+  Wire.begin(SDA_PIN, SCL_PIN);
   
   // We use the library here just to handle the complex 4-bit initialization sequence
-  lcd.init(); 
+  lcd.init();
   delay(2);
   
   Serial.println("Setup Complete. Type a message in the Serial Monitor:");
