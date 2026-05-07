@@ -1,22 +1,8 @@
-// TEMPLATE CODE
-// #include <Wire.h>
-// #include <LiquidCrystal_I2C.h>
-
-// LiquidCrystal_I2C lcd(0x27, 16, 2);
-
-// void setup() {
-//   Serial.begin(115200);
-//   Wire.begin();
-//   lcd.init();
-//   delay(2);
-// }
-
-// void loop() {
-//   // ====================> TODO:
-//   // Write code that takes Serial input and displays it to the LCD. Do NOT use any 
-//   // functions from the LiquidCrystal I2C library here.
-// }
-
+// Filename: lab3-1.ino
+// Authors: Ruiqi Liu, Hailey Yuan
+// Date: 5/7/2026
+// Description: This file allows users to write text to the serial monitor and display it on the LCD.
+// Gemini-909
 
 // AI GENERATED CODE
 #include <Wire.h>
@@ -37,10 +23,11 @@ const uint8_t RW_WRITE = 0x00; // Bit 1: 0 = Write (always 0 for this lab)
 const uint8_t EN_BIT   = 0x04; // Bit 2: Enable bit
 const uint8_t BL_ON    = 0x08; // Bit 3: Backlight control (1 = On)
 
-
-// Helper function to send 4 bits (a nibble) + control bits to the LCD
+// Name: sendNibble
+// Description: sends 4 bits and control bits to the LCD
+// nibble: the bits being sent
+// isData: determines if we are sending data (text) or a command (cursor position, clear)
 void sendNibble(uint8_t nibble, bool isData) {
-  // Determine if we are sending data (text) or a command (cursor position, clear)
   uint8_t rs = isData ? RS_DATA : 0x00; 
   
   // Combine the data nibble (bits 4-7) with backlight, R/W, and RS bits
@@ -63,7 +50,10 @@ void sendNibble(uint8_t nibble, bool isData) {
   delayMicroseconds(50); 
 }
 
-// Helper function to send a full 8-bit byte (broken into two 4-bit transmissions)
+// Name: sendByte
+// Description: Sends a byte (8 bits) to the LCD. The byte is broken into two bits.
+// value: the byte being sent
+// isData: determines if we are sending data (text) or a command (cursor position, clear)
 void sendByte(uint8_t value, bool isData) {
   // Send High Nibble first (Bits 4-7)
   sendNibble(value & 0xF0, isData);
@@ -71,6 +61,8 @@ void sendByte(uint8_t value, bool isData) {
   // Send Low Nibble second (Shift bits 0-3 up to the 4-7 position)
   sendNibble((value << 4) & 0xF0, isData);
 }
+
+// LOOP AND SETUP
 
 void setup() {
   Serial.begin(115200);

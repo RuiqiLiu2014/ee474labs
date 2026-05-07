@@ -1,3 +1,9 @@
+// Filename: lab3-3.ino
+// Authors: Ruiqi Liu, Hailey Yuan
+// Date: 5/7/2026
+// Description: This file uses ISRs from a button, BLE, and timer.
+// Gemini-909
+
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 #include <BLEDevice.h>
@@ -7,7 +13,7 @@
 // ==========================================
 // 1. PIN DEFINITIONS & UUIDS
 // ==========================================
-#define BUTTON_PIN 4 // Connect a tactile switch from GPIO 4 to GND
+#define BUTTON_PIN 7 // Connect a tactile switch from GPIO 4 to GND
 
 // Generated random UUIDs for BLE Service and Characteristic
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
@@ -33,12 +39,16 @@ volatile unsigned long last_button_time = 0; // Used for debouncing
 // IRAM_ATTR forces the compiled code into internal RAM for faster execution
 
 // --- Timer ISR ---
+// Name; timer_isr
+// Description: updates LCD using the timer flag.
 void IRAM_ATTR timer_isr() {
   counter++;           // Increment the counter
   timer_flag = true;   // Tell the main loop it's time to update the LCD
 }
 
 // --- Button ISR ---
+// Name: button_isr
+// Description: Sets a flag when the button is pressed.
 void IRAM_ATTR button_isr() {
   // Simple software debounce to prevent multiple triggers from one press
   unsigned long current_time = millis(); 
@@ -49,6 +59,8 @@ void IRAM_ATTR button_isr() {
 }
 
 // --- BLE Callback (Interrupt-driven behind the scenes) ---
+// Name: BLECharacteristicCallbacks
+// Description: Sets a flag when a signal is recieved using BLE.
 class MyCallbacks: public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic *pCharacteristic) {
     // When a signal is received from the LightBlue app, set the flag

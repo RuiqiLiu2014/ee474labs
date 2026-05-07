@@ -1,3 +1,10 @@
+// Filename: lab3-2.ino
+// Authors: Ruiqi Liu, Hailey Yuan
+// Date: 5/7/2026
+// Description: This file uses a scheduler to perform a variety of tasks, including blinking an LED 
+// and playing different notes on the buzzer.
+// Gemini-909
+
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
@@ -50,11 +57,16 @@ void reset_task_contexts() {
 // ==========================================
 // 4. REQUIRED OS FUNCTIONS
 // ==========================================
+
+// Name: my_sleep
+// Description: sets task state to sleeping and determines the time when the task should wake up
 void my_sleep(unsigned long n_msec) {
   tasks[current_task].state = SLEEPING;
   tasks[current_task].wake_time = millis() + n_msec;
 }
 
+// Name: halt_me
+// Description: sets task to the halted state
 void halt_me() {
   tasks[current_task].state = HALTED;
   Serial.print("Completed: ");
@@ -68,7 +80,8 @@ void halt_me() {
 // ==========================================
 
 // --- Task A: LED Blinker ---
-// Blink 8 times a sec (8Hz). 1 cycle = 125ms -> Toggle every 62ms
+// Name: task_a_blink
+// Description: Blinks an LED at a frequency of 8Hz.
 void task_a_blink() {
   static bool led_state = false;
   led_state = !led_state;
@@ -77,6 +90,8 @@ void task_a_blink() {
 }
 
 // --- Task B: LCD Counter ---
+// Name: task_b_counter
+// Description: Counts from 0-10 on the LCD at a rate of 1 number every two seconds
 void task_b_counter() {
   if (b_runs >= 2) {
     halt_me();
@@ -96,7 +111,8 @@ void task_b_counter() {
 }
 
 // --- Task C: Music Player ---
-// --- Task C: Music Player ---
+// Name: task_c_music
+// Description: Plays a sequence of 10 notes on the buzzer
 const int notes[10] = {261, 293, 329, 349, 392, 440, 493, 523, 587, 659};
 void task_c_music() {
   if (c_runs >= 2) {
@@ -123,6 +139,8 @@ void task_c_music() {
 }
 
 // --- Task D: Alphabet Printer ---
+// Name: task_d_alphabet
+// Description: Displays the alphabet to the serial monitor at a rate of 2 letters per second.
 void task_d_alphabet() {
   if (d_runs >= 2) {
     halt_me();
@@ -142,6 +160,8 @@ void task_d_alphabet() {
 }
 
 // --- Task E: Priority Updater ---
+// Name: task_e_updater
+// Description: Updates the priority scheme the scheduler runs.
 void task_e_updater() {
   static bool first_run = true;
   // Let it sleep 30s immediately on boot before switching to Scheme 2
@@ -177,6 +197,8 @@ void task_e_updater() {
 }
 
 // --- Task F: Extra Credit O-Scope ---
+// Name: task_f_oscope
+// Description: Sends pulses to the oscilloscope pin.
 void task_f_oscope() {
   static bool pin_state = false;
   pin_state = !pin_state;
