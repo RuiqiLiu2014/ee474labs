@@ -23,8 +23,8 @@
 // Ensure that the "LiquidCrystal_I2C" library by Frank de Brabander is installed
 #include <LiquidCrystal_I2C.h>
 
-#define SDA_PIN 4
-#define SCL_PIN 5
+#define SDA_PIN 8
+#define SCL_PIN 9
 
 LiquidCrystal_I2C lcd(0x27, 16, 2); // Initialize the LCD
 
