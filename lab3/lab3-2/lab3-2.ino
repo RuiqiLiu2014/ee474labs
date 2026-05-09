@@ -1,23 +1,23 @@
 // Filename: lab3-2.ino
 // Authors: Ruiqi Liu, Hailey Yuan
-// Date: 5/7/2026
+// Date: 5/8/2026
 // Description: This file uses a scheduler to perform a variety of tasks, including blinking an LED 
 // and playing different notes on the buzzer.
 // Gemini-909
 
+// INCLUDES
+
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
-// ==========================================
-// 1. PIN DEFINITIONS
-// ==========================================
+// MACROS
+
 #define LED_PIN       4
 #define BUZZER_PIN    5
 #define OSCOPE_PIN    6
 
-// ==========================================
-// 2. SCHEDULER & TCB DEFINITIONS
-// ==========================================
+// ENUMS, STRUCTS, AND GLOBAL VARIABLES
+
 enum TaskState { RUNNING, READY, HALTED, SLEEPING };
 
 typedef void (*TaskFunction)(void);
@@ -37,26 +37,22 @@ int current_task = -1; // Tracks which task is currently executing
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-// ==========================================
-// 3. TASK CONTEXT VARIABLES
-// ==========================================
 // These global variables let Tasks B, C, and D remember where they 
 // are between scheduler calls, and allows Task E to reset them.
 int b_count = 1, b_runs = 0;
 int c_note_idx = 0, c_runs = 0;
 char d_letter = 'A'; int d_runs = 0;
 
+// FUNCTIONS
+
+// Name: reset_task_contexts
+// Description: resets all tasks to their initial state
 void reset_task_contexts() {
   b_count = 1; b_runs = 0;
   c_note_idx = 0; c_runs = 0;
   d_letter = 'A'; d_runs = 0;
-  // v3.0 syntax for setting duty cycle to 0 (silence)
   ledcWrite(BUZZER_PIN, 0); 
 }
-
-// ==========================================
-// 4. REQUIRED OS FUNCTIONS
-// ==========================================
 
 // Name: my_sleep
 // Description: sets task state to sleeping and determines the time when the task should wake up
@@ -75,13 +71,8 @@ void halt_me() {
   Serial.println(tasks[current_task].priority);
 }
 
-// ==========================================
-// 5. TASK FUNCTIONS
-// ==========================================
-
-// --- Task A: LED Blinker ---
 // Name: task_a_blink
-// Description: Blinks an LED at a frequency of 8Hz.
+// Description: Blinks an LED at a frequency of 8 Hz.
 void task_a_blink() {
   static bool led_state = false;
   led_state = !led_state;
@@ -89,9 +80,8 @@ void task_a_blink() {
   my_sleep(62);
 }
 
-// --- Task B: LCD Counter ---
 // Name: task_b_counter
-// Description: Counts from 0-10 on the LCD at a rate of 1 number every two seconds
+// Description: Counts from 1-10 on the LCD at a rate of one number every two seconds
 void task_b_counter() {
   if (b_runs >= 2) {
     halt_me();
@@ -110,7 +100,6 @@ void task_b_counter() {
   my_sleep(2000); // 1 count every 2 seconds
 }
 
-// --- Task C: Music Player ---
 // Name: task_c_music
 // Description: Plays a sequence of 10 notes on the buzzer
 const int notes[10] = {261, 293, 329, 349, 392, 440, 493, 523, 587, 659};
@@ -122,9 +111,8 @@ void task_c_music() {
   }
 
   int freq = notes[c_note_idx];
-  
-  // v3.0 syntax: Change frequency on the fly
-  ledcChangeFrequency(BUZZER_PIN, freq, 8); 
+
+  ledcChangeFrequency(BUZZER_PIN, freq, 8);
   ledcWrite(BUZZER_PIN, 128); // 50% duty cycle (Volume)
 
   lcd.setCursor(0, 1);
@@ -138,7 +126,6 @@ void task_c_music() {
   my_sleep(500); // Play note for 500ms
 }
 
-// --- Task D: Alphabet Printer ---
 // Name: task_d_alphabet
 // Description: Displays the alphabet to the serial monitor at a rate of 2 letters per second.
 void task_d_alphabet() {
@@ -159,7 +146,6 @@ void task_d_alphabet() {
   my_sleep(500); // 2 letters per sec = 500ms sleep
 }
 
-// --- Task E: Priority Updater ---
 // Name: task_e_updater
 // Description: Updates the priority scheme the scheduler runs.
 void task_e_updater() {
@@ -196,7 +182,6 @@ void task_e_updater() {
   my_sleep(30000); // Sleep 30 seconds until next update
 }
 
-// --- Task F: Extra Credit O-Scope ---
 // Name: task_f_oscope
 // Description: Sends pulses to the oscilloscope pin.
 void task_f_oscope() {
@@ -209,15 +194,13 @@ void task_f_oscope() {
   my_sleep(1); 
 }
 
-// ==========================================
-// 6. SETUP
-// ==========================================
+// SETUP AND LOOP
+
 void setup() {
   Serial.begin(115200);
   pinMode(LED_PIN, OUTPUT);
   pinMode(OSCOPE_PIN, OUTPUT);
   
-  // v3.0 syntax: Attach pin, set frequency, and set resolution all in one step
   ledcAttach(BUZZER_PIN, 2000, 8); 
 
   lcd.init();
@@ -237,20 +220,17 @@ void setup() {
   lcd.clear();
 }
 
-// ==========================================
-// 7. THE SCHEDULER LOOP
-// ==========================================
 void loop() {
   unsigned long current_millis = millis();
 
-  // 1. Wake up sleeping tasks
+  // Wake up sleeping tasks
   for (int i = 0; i < NUM_TASKS; i++) {
     if (tasks[i].state == SLEEPING && current_millis >= tasks[i].wake_time) {
       tasks[i].state = READY;
     }
   }
 
-  // 2. Find the READY task with the highest priority (lowest number)
+  // Find the READY task with the highest priority (lowest number)
   int best_task = -1;
   uint8_t best_priority = 255; 
   static int last_task = 0; // Remembers last task for Round-Robin
@@ -267,12 +247,12 @@ void loop() {
     }
   }
 
-  // 3. Execute the chosen task
+  // Execute the chosen task
   if (best_task != -1) {
     current_task = best_task;
     tasks[best_task].state = RUNNING;
     
-    tasks[best_task].func(); // <--- Run the Task!
+    tasks[best_task].func(); // Run the task
 
     // If the task didn't update its own state to SLEEPING or HALTED, return to READY
     if (tasks[current_task].state == RUNNING) {
