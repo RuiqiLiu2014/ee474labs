@@ -1026,7 +1026,7 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = /Users/hyuan/Documents/Arduino/EE474/labs/lab4/doxygen/lab4-1_d
+INPUT                  = lab4-1_d lab4-2_d
 
 # This tag can be used to specify the character encoding of the source files
 # that Doxygen parses. Internally Doxygen uses the UTF-8 encoding. Doxygen uses
@@ -1115,7 +1115,8 @@ FILE_PATTERNS          = *.c \
                          *.vhdl \
                          *.ucf \
                          *.qsf \
-                         *.ice
+                         *.ice \
+			 *.ino
 
 # The RECURSIVE tag can be used to specify whether or not subdirectories should
 # be searched for input files as well.
