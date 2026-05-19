@@ -18,28 +18,33 @@
 #define LED_PIN 4
 
 // ================== Global Variables ==================
-// Total times for tasks
-const TickType_t ledTaskExecutionTime = 48000 / portTICK_PERIOD_MS;      // 48 seconds
-const TickType_t counterTaskExecutionTime = 20000 / portTICK_PERIOD_MS;  // 20 seconds
-const TickType_t alphabetTaskExecutionTime = 26000 / portTICK_PERIOD_MS; // 26 seconds
-// Remaining Execution Times
-volatile TickType_t remainingLedTime = ledTaskExecutionTime;
-volatile TickType_t remainingCounterTime = counterTaskExecutionTime;
-volatile TickType_t remainingAlphabetTime = alphabetTaskExecutionTime;
+// // Total times for tasks
+// const TickType_t ledTaskExecutionTime = 48000 / portTICK_PERIOD_MS;      // 48 seconds
+// const TickType_t counterTaskExecutionTime = 20000 / portTICK_PERIOD_MS;  // 20 seconds
+// const TickType_t alphabetTaskExecutionTime = 26000 / portTICK_PERIOD_MS; // 26 seconds
 
-TaskHandle_t ledTaskHandle;
-TaskHandle_t counterTaskHandle;
-TaskHandle_t alphabetTaskHandle;
+// // Remaining Execution Times
+// volatile TickType_t remainingLedTime = ledTaskExecutionTime;
+// volatile TickType_t remainingCounterTime = counterTaskExecutionTime;
+// volatile TickType_t remainingAlphabetTime = alphabetTaskExecutionTime;
 
+// // Task Handles
+// TaskHandle_t ledTaskHandle;
+// TaskHandle_t counterTaskHandle;
+// TaskHandle_t alphabetTaskHandle;
+
+const TickType_t totalTimes[3] = {48000 / portTICK_PERIOD_MS, 20000 / portTICK_PERIOD_MS, 26000 / portTICK_PERIOD_MS};
+volatile TickType_t remainingTimes[3] = {48000 / portTICK_PERIOD_MS, 20000 / portTICK_PERIOD_MS, 26000 / portTICK_PERIOD_MS};
+TaskHandle_t taskHandles[3];
+
+// Initialize LCD
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-// ================== Function Prototypes ==================
-void ledTask(void *arg);
-void counterTask(void *arg);
-void alphabetTask(void *arg);
-void scheduleTasks(void *arg);
-
-// ================== Function Implementations ==================
+// ================== Functions ==================
+void taskDelay(int ms, int index) {
+   vTaskDelay(ms / portTICK_PERIOD_MS)
+   remainingTimes[index] -= ms / portTICK_PERIOD_MS;
+}
 
 // Name: ledTask
 // Description: FreeRTOS task that blinks an LED in a fixed pattern (2 s ON,
@@ -52,33 +57,21 @@ void scheduleTasks(void *arg);
 void ledTask(void *arg) {
     pinMode(LED_PIN, OUTPUT);
 
-    // FreeRTOS tasks must run in an infinite loop
     while (1) {
-        // Repeat the blink pattern 12 times
         for (int i = 0; i < 12; i++) {
-            // ON 2 seconds
             digitalWrite(LED_PIN, HIGH);
-            vTaskDelay(2000 / portTICK_PERIOD_MS);
-            remainingLedTime -= (2000 / portTICK_PERIOD_MS);
+            taskDelay(2000, 0);
 
-            // OFF 0.95 seconds
             digitalWrite(LED_PIN, LOW);
-            vTaskDelay(950 / portTICK_PERIOD_MS);
-            remainingLedTime -= (950 / portTICK_PERIOD_MS);
+            taskDelay(950, 0);
 
-            // ON 0.10 seconds
             digitalWrite(LED_PIN, HIGH);
-            vTaskDelay(100 / portTICK_PERIOD_MS);
-            remainingLedTime -= (100 / portTICK_PERIOD_MS);
+            taskDelay(100, 0);
 
-            // OFF 0.95 seconds
             digitalWrite(LED_PIN, LOW);
-            vTaskDelay(950 / portTICK_PERIOD_MS);
-            remainingLedTime -= (950 / portTICK_PERIOD_MS);
+            taskDelay(950, 0);
         }
 
-        // Once the 12 iterations (48 seconds) complete, suspend this task.
-        // It will remain suspended until your scheduler resets the times and restarts it.
         vTaskSuspend(NULL); 
     }
 }
@@ -99,8 +92,7 @@ void counterTask(void *arg) {
          lcd.print(i);
          lcd.print("    ");
 
-         vTaskDelay(1000 / portTICK_PERIOD_MS);
-         remainingCounterTime -= (1000 / portTICK_PERIOD_MS);
+         taskDelay(1000, 1);
       }
       
       vTaskSuspend(NULL);
@@ -117,9 +109,10 @@ void alphabetTask(void *arg) {
    while (1) {
       for (char c = 'A'; c <= 'Z'; c += 1) {
          Serial.printf("%c ", c);
-         vTaskDelay(1000 / portTICK_PERIOD_MS);
-         remainingAlphabetTime -= (1000 / portTICK_PERIOD_MS);
+         taskDelay(1000, 2);
       }
+      Serial.println();
+
       vTaskSuspend(NULL);
    }
 }
@@ -136,55 +129,30 @@ void alphabetTask(void *arg) {
 void scheduleTasks(void *arg) {
    while (1) {
       // Step 1: Check if ALL tasks are finished (remaining times are 0 or less)
-      if (remainingLedTime <= 0 && remainingCounterTime <= 0 && remainingAlphabetTime <= 0) {
-         
+      if (remainingTimes[0] <= 0 && remainingTimes[1] <= 0 && remainingTimes[2] <= 0) {
          // Reset the remaining times back to their initial execution times
-         remainingLedTime = ledTaskExecutionTime;
-         remainingCounterTime = counterTaskExecutionTime;
-         remainingAlphabetTime = alphabetTaskExecutionTime;
-         
-         // Note: The tasks suspended themselves when they finished. 
-         // We don't need to resume them here; the logic below will 
-         // immediately pick the shortest one and resume it.
+         for (int i = 0; i < 3; i++) {
+             remainingTimes[i] = totalTimes[i];
+         }
       }
 
       // Step 2: Find the task with the shortest remaining time > 0
       TickType_t minTime = 0xFFFFFFFF; // Set to absolute maximum initially
       int shortestTask = -1;           // 0: LED, 1: Counter, 2: Alphabet
-
-      if (remainingLedTime > 0 && remainingLedTime < minTime) {
-         minTime = remainingLedTime;
-         shortestTask = 0;
-      }
-      if (remainingCounterTime > 0 && remainingCounterTime < minTime) {
-         minTime = remainingCounterTime;
-         shortestTask = 1;
-      }
-      if (remainingAlphabetTime > 0 && remainingAlphabetTime < minTime) {
-         minTime = remainingAlphabetTime;
-         shortestTask = 2;
+      for (int i = 0; i < 3; i++) {
+         TickType_t time = remainingTimes[i];
+         if (time > 0 && time < minTime) {
+            minTime = time;
+            shortestTask = i;
+         }
       }
 
-      // Step 3: Suspend and Resume tasks based on our finding
-      if (shortestTask == 0) {
-         vTaskResume(ledTaskHandle);
-         vTaskSuspend(counterTaskHandle);
-         vTaskSuspend(alphabetTaskHandle);
-      } 
-      else if (shortestTask == 1) {
-         vTaskSuspend(ledTaskHandle);
-         vTaskResume(counterTaskHandle);
-         vTaskSuspend(alphabetTaskHandle);
-      } 
-      else if (shortestTask == 2) {
-         vTaskSuspend(ledTaskHandle);
-         vTaskSuspend(counterTaskHandle);
-         vTaskResume(alphabetTaskHandle);
+      if (shortestTask != -1) {
+         vTaskResume(taskHandles[shortestTask]);
+         vTaskSuspend(taskHandles[(shortestTask + 1) % 3]);
+         vTaskSuspend(taskHandles[(shortestTask + 2) % 3]);
       }
 
-      // Step 4: Delay the scheduler briefly before checking again
-      // 100ms is a good polling rate to keep the scheduler responsive 
-      // without hogging the CPU.
       vTaskDelay(100 / portTICK_PERIOD_MS);
    }
 }
@@ -219,7 +187,7 @@ void setup() {
         2048, 
         NULL, 
         1,                  // Priority: 1
-        &ledTaskHandle,     // Pass the global handle so the scheduler can control it
+        &taskHandles[0],     // Pass the global handle so the scheduler can control it
         0                   // Pin to Core 0
     );
 
@@ -229,7 +197,7 @@ void setup() {
         2048, 
         NULL, 
         1,                  // Priority: 1
-        &counterTaskHandle, // Pass the global handle
+        &taskHandles[1], // Pass the global handle
         0                   // Pin to Core 0
     );
 
@@ -239,7 +207,7 @@ void setup() {
         2048, 
         NULL, 
         1,                  // Priority: 1
-        &alphabetTaskHandle,// Pass the global handle
+        &taskHandles[2],// Pass the global handle
         0                   // Pin to Core 0
     );
 }
