@@ -1,10 +1,23 @@
-// Gemini 505
+// Filename: lab4-2.ino
+// Author: Ruiqi Liu, Hailey Yuan
+// Date: 05/19/2026
+/* Description: Implements a Shortest Job First (SJF) cooperative scheduler using
+             FreeRTOS on an ESP32. Three tasks run on Core 0 — blinking an LED,
+             printing an incrementing counter to an I2C LCD, and printing the
+             alphabet to Serial. A dedicated scheduler task selects whichever
+             job has the least remaining execution time and runs it exclusively
+             until all three finish, then resets and repeats. */
 
+// Gemini 404
+
+// ================== Includes ==================
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
+// ================== Macros ==================
 #define LED_PIN 4
 
+// ================== Global Variables ==================
 // Total times for tasks
 const TickType_t ledTaskExecutionTime = 48000 / portTICK_PERIOD_MS;      // 48 seconds
 const TickType_t counterTaskExecutionTime = 20000 / portTICK_PERIOD_MS;  // 20 seconds
@@ -20,6 +33,22 @@ TaskHandle_t alphabetTaskHandle;
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
+// ================== Function Prototypes ==================
+void ledTask(void *arg);
+void counterTask(void *arg);
+void alphabetTask(void *arg);
+void scheduleTasks(void *arg);
+
+// ================== Function Implementations ==================
+
+// Name: ledTask
+// Description: FreeRTOS task that blinks an LED in a fixed pattern (2 s ON,
+//              0.95 s OFF, 0.10 s ON, 0.95 s OFF) repeated 12 times for a
+//              total of 48 seconds. After completing one full cycle the task
+//              suspends itself, waiting for the scheduler to resume it in the
+//              next round.
+// Parameters:  arg - unused task parameter (required by FreeRTOS API)
+// Returns:     void (FreeRTOS tasks never return)
 void ledTask(void *arg) {
     pinMode(LED_PIN, OUTPUT);
 
@@ -55,9 +84,14 @@ void ledTask(void *arg) {
 }
 
 
+// Name: counterTask
+// Description: FreeRTOS task that counts from 1 to 20, printing each value on
+//              the first row of the LCD once per second, for a total of 20 seconds.
+//              After reaching 20 the task suspends itself until the scheduler
+//              resumes it for the next scheduling cycle.
+// Parameters:  arg - unused task parameter (required by FreeRTOS API)
+// Returns:     void (FreeRTOS tasks never return)
 void counterTask(void *arg) {
- // TODO: Print out an incrementing counter to your LCD, and 
- //       update remaining time for this task
    while (1) {
       for (int i = 1; i <= 20; i++) {
          lcd.setCursor(0, 0);
@@ -73,7 +107,12 @@ void counterTask(void *arg) {
    }
 }
 
-
+// Name: alphabetTask
+// Description: FreeRTOS task that prints each letter A–Z to the Serial monitor
+//              at a rate of one letter per second (26 seconds total). After 'Z'
+//              the task suspends itself until the scheduler resumes it.
+// Parameters:  arg - unused task parameter (required by FreeRTOS API)
+// Returns:     void (FreeRTOS tasks never return)
 void alphabetTask(void *arg) {
    while (1) {
       for (char c = 'A'; c <= 'Z'; c += 1) {
@@ -81,11 +120,19 @@ void alphabetTask(void *arg) {
          vTaskDelay(1000 / portTICK_PERIOD_MS);
          remainingAlphabetTime -= (1000 / portTICK_PERIOD_MS);
       }
-
       vTaskSuspend(NULL);
    }
 }
 
+// Name: scheduleTasks
+// Description: FreeRTOS task that implements a non-preemptive Shortest Job First
+//              (SJF) scheduler. Every 100 ms it evaluates the remaining execution
+//              time of the three worker tasks, resumes whichever has the least
+//              time left (and is not yet done), and suspends the others.
+//              When all three remaining times reach zero, it resets the counters
+//              and immediately begins the next scheduling cycle.
+// Parameters:  arg - unused task parameter (required by FreeRTOS API)
+// Returns:     void (FreeRTOS tasks never return)
 void scheduleTasks(void *arg) {
    while (1) {
       // Step 1: Check if ALL tasks are finished (remaining times are 0 or less)
