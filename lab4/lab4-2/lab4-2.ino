@@ -4,7 +4,7 @@
 #include <LiquidCrystal_I2C.h>
 
 #define LED_PIN 4
-#define PHOTO_PIN 36
+#define PHOTO_PIN 7
 
 volatile int lightLevel;
 volatile int SMA;

@@ -7,7 +7,7 @@
 // Gemini-909 (no debugging needed)
 
 const int photoresistorPin = 7; // Analog input pin connected to the voltage divider
-const int ledPin = 5;            // Digital output pin connected to the LED
+const int ledPin = 4;            // Digital output pin connected to the LED
 
 // PWM Properties
 const int freq = 5000;           // Frequency of 5000 Hz

@@ -23,7 +23,7 @@
 #define TIMG_T0UPDATE_ADDR (TIMG0_BASE + 0x000C)
 #define TIMG_T0UPDATE_REG (*(volatile uint32_t *)(TIMG_T0UPDATE_ADDR))
 
-const int testPin = 5; // Using GPIO 5 for the LED output
+const int testPin = 4; // Using GPIO 5 for the LED output
 
 void setup() {
     // Configure GPIO 2 as an output pin
