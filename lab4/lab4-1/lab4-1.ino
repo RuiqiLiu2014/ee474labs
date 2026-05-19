@@ -1,7 +1,7 @@
-// Filename: lab4-2.ino
+// Filename: lab4-1.ino
 // Author: Ruiqi Liu, Hailey Yuan
 // Date: 05/19/2026
-/* Description: Implements a Shortest Job First (SJF) cooperative scheduler using
+/* Description: Implements a Shortest Time Remaining First (STRF) cooperative scheduler using
              FreeRTOS on an ESP32. Three tasks run on Core 0 — blinking an LED,
              printing an incrementing counter to an I2C LCD, and printing the
              alphabet to Serial. A dedicated scheduler task selects whichever
