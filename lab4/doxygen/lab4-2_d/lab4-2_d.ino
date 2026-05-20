@@ -35,7 +35,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
  * @brief Computes the arithmetic mean of a 10-element integer array.
  * * Used by lightDetectorTask to produce the Simple Moving Average.
  * * @param buffer Pointer to an array of exactly 10 integer ADC samples
- * @return int The integer average (truncated, not rounded) of the 10 values
+ * * @return int The integer average (truncated, not rounded) of the 10 values
  */
 int calculateAvg(int buffer[]) {
   int sum = 0;
@@ -50,7 +50,7 @@ int calculateAvg(int buffer[]) {
  * * Stores the value in a 10-element circular buffer, and updates the
  * global lightLevel and SMA under semaphore protection.
  * * @param arg Unused task parameter (required by FreeRTOS API)
- * @return void (FreeRTOS tasks never return)
+ * * @return void (FreeRTOS tasks never return)
  */
 void lightDetectorTask(void *arg) {
   int buffer[10] = {0}; 
@@ -74,7 +74,7 @@ void lightDetectorTask(void *arg) {
  * * Refreshes the I2C LCD every 250 ms only when either value has changed 
  * since the last update, avoiding unnecessary redraws.
  * * @param arg Unused task parameter (required by FreeRTOS API)
- * @return void (FreeRTOS tasks never return)
+ * * @return void (FreeRTOS tasks never return)
  */
 void lcdTask(void *arg) {
   int lastLight = -1;
@@ -114,7 +114,7 @@ void lcdTask(void *arg) {
  * * Flashes the LED 3 times in ~1 second whenever the SMA falls outside the 
  * normal range (300–3800). A 2-second pause follows each burst.
  * * @param arg Unused task parameter (required by FreeRTOS API)
- * @return void (FreeRTOS tasks never return)
+ * * @return void (FreeRTOS tasks never return)
  */
 void anomalyAlarmTask(void *arg) {
   while (1) {
@@ -142,7 +142,7 @@ void anomalyAlarmTask(void *arg) {
 /**
  * @brief Determines whether a given integer is a prime number.
  * * @param n The integer to test (values <= 1 always return false)
- * @return bool True if n is prime, false otherwise
+ * * @return bool True if n is prime, false otherwise
  */
 bool isPrime(int n) {
     if (n <= 1) return false;
@@ -157,7 +157,7 @@ bool isPrime(int n) {
  * * Operates independently of the semaphore. Yields 1 ms per iteration to 
  * prevent starving the FreeRTOS IDLE task.
  * * @param arg Unused task parameter (required by FreeRTOS API)
- * @return void (FreeRTOS tasks never return)
+ * * @return void (FreeRTOS tasks never return)
  */
 void primeCalculationTask(void *arg) {
   while(1) {

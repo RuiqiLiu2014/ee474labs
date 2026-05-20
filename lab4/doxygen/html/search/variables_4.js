@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['sema_0',['sema',['../lab4-2__d_8ino.html#a15fdc1a8bba27ef0c8cdac7655b5d4ca',1,'lab4-2_d.ino']]],
-  ['sma_1',['SMA',['../lab4-2__d_8ino.html#aa2fab38224cee40a802890f3a8bdba5e',1,'lab4-2_d.ino']]]
+  ['taskhandles_0',['taskHandles',['../lab4-1__d_8ino.html#a5c369805a68fefda84d496992645e9e2',1,'lab4-1_d.ino']]],
+  ['totaltimes_1',['totalTimes',['../lab4-1__d_8ino.html#ae92814fa99c2e42a4d23420bcdcada22',1,'lab4-1_d.ino']]]
 ];

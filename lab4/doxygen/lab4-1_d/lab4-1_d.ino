@@ -76,7 +76,7 @@ void ledTask(void *arg) {
  * * Prints each value on the first row of the LCD once per second, for a total of 20 seconds.
  * After reaching 20 the task suspends itself until the scheduler resumes it for the next cycle.
  * * @param arg Unused task parameter (required by FreeRTOS API)
- * @return void (FreeRTOS tasks never return)
+ * * @return void (FreeRTOS tasks never return)
  */
 void counterTask(void *arg) {
    while (1) {
@@ -98,7 +98,7 @@ void counterTask(void *arg) {
  * * Prints at a rate of one letter per second (26 seconds total). After 'Z'
  * the task suspends itself until the scheduler resumes it.
  * * @param arg Unused task parameter (required by FreeRTOS API)
- * @return void (FreeRTOS tasks never return)
+ * * @return void (FreeRTOS tasks never return)
  */
 void alphabetTask(void *arg) {
    while (1) {
@@ -118,7 +118,7 @@ void alphabetTask(void *arg) {
  * resumes whichever has the least time left (and is not yet done), and suspends the others.
  * When all three remaining times reach zero, it resets the counters and begins the next cycle.
  * * @param arg Unused task parameter (required by FreeRTOS API)
- * @return void (FreeRTOS tasks never return)
+ * * @return void (FreeRTOS tasks never return)
  */
 void scheduleTasks(void *arg) {
    while (1) {
