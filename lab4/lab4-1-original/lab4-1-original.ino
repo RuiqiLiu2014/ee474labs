@@ -146,6 +146,9 @@ void scheduleTasks(void *arg) {
          // Note: The tasks suspended themselves when they finished. 
          // We don't need to resume them here; the logic below will 
          // immediately pick the shortest one and resume it.
+        vTaskResume(ledTaskHandle);
+        vTaskResume(counterTaskHandle);
+        vTaskResume(alphabetTaskHandle);
       }
 
       // Step 2: Find the task with the shortest remaining time > 0
