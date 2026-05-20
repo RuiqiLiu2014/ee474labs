@@ -11,7 +11,6 @@
 // Gemini 404
 
 // ================== Includes ==================
-#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
 // ================== Macros ==================
@@ -42,7 +41,7 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // ================== Functions ==================
 void taskDelay(int ms, int index) {
-   vTaskDelay(ms / portTICK_PERIOD_MS)
+   vTaskDelay(ms / portTICK_PERIOD_MS);
    remainingTimes[index] -= ms / portTICK_PERIOD_MS;
 }
 
@@ -55,25 +54,23 @@ void taskDelay(int ms, int index) {
 // Parameters:  arg - unused task parameter (required by FreeRTOS API)
 // Returns:     void (FreeRTOS tasks never return)
 void ledTask(void *arg) {
-    pinMode(LED_PIN, OUTPUT);
+   while (1) {
+      for (int i = 0; i < 12; i++) {
+         digitalWrite(LED_PIN, HIGH);
+         taskDelay(2000, 0);
 
-    while (1) {
-        for (int i = 0; i < 12; i++) {
-            digitalWrite(LED_PIN, HIGH);
-            taskDelay(2000, 0);
+         digitalWrite(LED_PIN, LOW);
+         taskDelay(950, 0);
 
-            digitalWrite(LED_PIN, LOW);
-            taskDelay(950, 0);
+         digitalWrite(LED_PIN, HIGH);
+         taskDelay(100, 0);
 
-            digitalWrite(LED_PIN, HIGH);
-            taskDelay(100, 0);
+         digitalWrite(LED_PIN, LOW);
+         taskDelay(950, 0);
+      }
 
-            digitalWrite(LED_PIN, LOW);
-            taskDelay(950, 0);
-        }
-
-        vTaskSuspend(NULL); 
-    }
+      vTaskSuspend(NULL); 
+   }
 }
 
 
@@ -165,6 +162,8 @@ void setup() {
    //          3. Print a counter to the LCD
    //          4. Print the alphabet to Serial
    Serial.begin(115200);
+
+   pinMode(LED_PIN, OUTPUT);
    
    lcd.init();
    lcd.backlight();
@@ -172,44 +171,44 @@ void setup() {
    lcd.clear();
 
    xTaskCreatePinnedToCore(
-        scheduleTasks,      // Function name
-        "Scheduler Task",   // Human-readable name for debugging
-        2048,               // Stack size (2048 bytes is safe for most logic)
-        NULL,               // Task parameter (unused)
-        2,                  // Priority: 2 (Highest)
-        NULL,               // Task Handle (We don't need to suspend the scheduler, so NULL)
-        0                   // Pin to Core 0
-    );
+      ledTask, 
+      "LED Task", 
+      2048, 
+      NULL, 
+      1,                  // Priority: 1
+      &taskHandles[0],     // Pass the global handle so the scheduler can control it
+      0                   // Pin to Core 0
+   );
 
-    xTaskCreatePinnedToCore(
-        ledTask, 
-        "LED Task", 
-        2048, 
-        NULL, 
-        1,                  // Priority: 1
-        &taskHandles[0],     // Pass the global handle so the scheduler can control it
-        0                   // Pin to Core 0
-    );
+   xTaskCreatePinnedToCore(
+      counterTask, 
+      "Counter Task", 
+      2048, 
+      NULL, 
+      1,                  // Priority: 1
+      &taskHandles[1], // Pass the global handle
+      0                   // Pin to Core 0
+   );
 
-    xTaskCreatePinnedToCore(
-        counterTask, 
-        "Counter Task", 
-        2048, 
-        NULL, 
-        1,                  // Priority: 1
-        &taskHandles[1], // Pass the global handle
-        0                   // Pin to Core 0
-    );
+   xTaskCreatePinnedToCore(
+      alphabetTask, 
+      "Alphabet Task", 
+      2048, 
+      NULL, 
+      1,                  // Priority: 1
+      &taskHandles[2],// Pass the global handle
+      0                   // Pin to Core 0
+   );
 
-    xTaskCreatePinnedToCore(
-        alphabetTask, 
-        "Alphabet Task", 
-        2048, 
-        NULL, 
-        1,                  // Priority: 1
-        &taskHandles[2],// Pass the global handle
-        0                   // Pin to Core 0
-    );
+   xTaskCreatePinnedToCore(
+      scheduleTasks,      // Function name
+      "Scheduler Task",   // Human-readable name for debugging
+      2048,               // Stack size (2048 bytes is safe for most logic)
+      NULL,               // Task parameter (unused)
+      2,                  // Priority: 2 (Highest)
+      NULL,               // Task Handle (We don't need to suspend the scheduler, so NULL)
+      0                   // Pin to Core 0
+   );
 }
 
 void loop() {}
