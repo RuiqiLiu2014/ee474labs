@@ -116,8 +116,6 @@ void lcdTask(void *arg) {
 // Parameters:  arg - unused task parameter (required by FreeRTOS API)
 // Returns:     void (FreeRTOS tasks never return)
 void anomalyAlarmTask(void *arg) {
-  pinMode(LED_PIN, OUTPUT);
-
   while (1) {
     int currentSMA = 0;
 
@@ -191,6 +189,7 @@ void primeCalculationTask(void *arg) {
 void setup() {
   Serial.begin(115200);
 
+  pinMode(LED_PIN, OUTPUT);
   pinMode(PHOTO_PIN, INPUT);
 
   lcd.init();

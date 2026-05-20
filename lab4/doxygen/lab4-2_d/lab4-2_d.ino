@@ -11,7 +11,6 @@
  */
 
 // ================== Includes ==================
-#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
 // ================== Macros ==================
@@ -30,15 +29,21 @@ SemaphoreHandle_t sema;
 /** LCD object using I2C address 0x27, configured for a 16-column × 2-row display. */
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-// ================== Function Prototypes ==================
-void lightDetectorTask(void *arg);
-void lcdTask(void *arg);
-void anomalyAlarmTask(void *arg);
-void primeCalculationTask(void *arg);
-int  calculateAvg(int buffer[]);
-bool isPrime(int n);
+// ================== Functions ==================
 
-// ================== Function Implementations ==================
+/**
+ * @brief Computes the arithmetic mean of a 10-element integer array.
+ * * Used by lightDetectorTask to produce the Simple Moving Average.
+ * * @param buffer Pointer to an array of exactly 10 integer ADC samples
+ * @return int The integer average (truncated, not rounded) of the 10 values
+ */
+int calculateAvg(int buffer[]) {
+  int sum = 0;
+  for (int i = 0; i < 10; i++) {
+    sum += buffer[i];
+  }
+  return sum / 10;
+}
 
 /**
  * @brief FreeRTOS task (Core 0) that reads the photoresistor every 500 ms.
@@ -48,7 +53,6 @@ bool isPrime(int n);
  * @return void (FreeRTOS tasks never return)
  */
 void lightDetectorTask(void *arg) {
-  pinMode(PHOTO_PIN, INPUT);
   int buffer[10] = {0}; 
   int index = 0;
 
@@ -63,20 +67,6 @@ void lightDetectorTask(void *arg) {
     }
     vTaskDelay(500 / portTICK_PERIOD_MS);
   }
-}
-
-/**
- * @brief Computes the arithmetic mean of a 10-element integer array.
- * * Used by lightDetectorTask to produce the Simple Moving Average.
- * * @param buffer Pointer to an array of exactly 10 integer ADC samples
- * @return int The integer average (truncated, not rounded) of the 10 values
- */
-int calculateAvg(int buffer[]) {
-  int sum = 0;
-  for (int i = 0; i < 10; i++) {
-    sum += buffer[i];
-  }
-  return sum / 10;
 }
 
 /**
@@ -127,8 +117,6 @@ void lcdTask(void *arg) {
  * @return void (FreeRTOS tasks never return)
  */
 void anomalyAlarmTask(void *arg) {
-  pinMode(LED_PIN, OUTPUT);
-
   while (1) {
     int currentSMA = 0;
 
@@ -152,6 +140,19 @@ void anomalyAlarmTask(void *arg) {
 }
 
 /**
+ * @brief Determines whether a given integer is a prime number.
+ * * @param n The integer to test (values <= 1 always return false)
+ * @return bool True if n is prime, false otherwise
+ */
+bool isPrime(int n) {
+    if (n <= 1) return false;
+    for (int i = 2; i * i <= n; i++) {
+        if (n % i == 0) return false;
+    }
+    return true;
+}
+
+/**
  * @brief FreeRTOS task (Core 1) that prints prime numbers up to 5000.
  * * Operates independently of the semaphore. Yields 1 ms per iteration to 
  * prevent starving the FreeRTOS IDLE task.
@@ -171,23 +172,13 @@ void primeCalculationTask(void *arg) {
 }
 
 /**
- * @brief Determines whether a given integer is a prime number.
- * * @param n The integer to test (values <= 1 always return false)
- * @return bool True if n is prime, false otherwise
- */
-bool isPrime(int n) {
-    if (n <= 1) return false;
-    for (int i = 2; i * i <= n; i++) {
-        if (n % i == 0) return false;
-    }
-    return true;
-}
-
-/**
  * @brief Standard Arduino setup function to initialize hardware, semaphores, and tasks.
  */
 void setup() {
   Serial.begin(115200);
+
+  pinMode(LED_PIN, OUTPUT);
+  pinMode(PHOTO_PIN, INPUT);
 
   lcd.init();
   lcd.backlight();
