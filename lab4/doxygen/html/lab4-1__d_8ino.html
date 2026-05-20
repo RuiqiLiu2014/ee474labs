@@ -196,11 +196,12 @@ Variables</h2></td></tr>
 <li>Prints at a rate of one letter per second (26 seconds total). After 'Z' the task suspends itself until the scheduler resumes it.</li>
 <li><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">arg</td><td>Unused task parameter (required by FreeRTOS API) </td></tr>
+    <tr><td class="paramname">arg</td><td>Unused task parameter (required by FreeRTOS API)</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>void (FreeRTOS tasks never return) </dd></dl>
+</li>
+<li><dl class="section return"><dt>Returns</dt><dd>void (FreeRTOS tasks never return) </dd></dl>
 </li>
 </ul>
 
@@ -226,11 +227,12 @@ Variables</h2></td></tr>
 <li>Prints each value on the first row of the LCD once per second, for a total of 20 seconds. After reaching 20 the task suspends itself until the scheduler resumes it for the next cycle.</li>
 <li><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">arg</td><td>Unused task parameter (required by FreeRTOS API) </td></tr>
+    <tr><td class="paramname">arg</td><td>Unused task parameter (required by FreeRTOS API)</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>void (FreeRTOS tasks never return) </dd></dl>
+</li>
+<li><dl class="section return"><dt>Returns</dt><dd>void (FreeRTOS tasks never return) </dd></dl>
 </li>
 </ul>
 
@@ -333,11 +335,12 @@ Variables</h2></td></tr>
 <li>Every 100 ms it evaluates the remaining execution time of the three worker tasks, resumes whichever has the least time left (and is not yet done), and suspends the others. When all three remaining times reach zero, it resets the counters and begins the next cycle.</li>
 <li><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">arg</td><td>Unused task parameter (required by FreeRTOS API) </td></tr>
+    <tr><td class="paramname">arg</td><td>Unused task parameter (required by FreeRTOS API)</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>void (FreeRTOS tasks never return) </dd></dl>
+</li>
+<li><dl class="section return"><dt>Returns</dt><dd>void (FreeRTOS tasks never return) </dd></dl>
 </li>
 </ul>
 

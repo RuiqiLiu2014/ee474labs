@@ -218,11 +218,12 @@ Variables</h2></td></tr>
 <li>Flashes the LED 3 times in ~1 second whenever the SMA falls outside the normal range (300–3800). A 2-second pause follows each burst.</li>
 <li><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">arg</td><td>Unused task parameter (required by FreeRTOS API) </td></tr>
+    <tr><td class="paramname">arg</td><td>Unused task parameter (required by FreeRTOS API)</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>void (FreeRTOS tasks never return) </dd></dl>
+</li>
+<li><dl class="section return"><dt>Returns</dt><dd>void (FreeRTOS tasks never return) </dd></dl>
 </li>
 </ul>
 
@@ -248,11 +249,12 @@ Variables</h2></td></tr>
 <li>Used by lightDetectorTask to produce the Simple Moving Average.</li>
 <li><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">buffer</td><td>Pointer to an array of exactly 10 integer ADC samples </td></tr>
+    <tr><td class="paramname">buffer</td><td>Pointer to an array of exactly 10 integer ADC samples</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>int The integer average (truncated, not rounded) of the 10 values </dd></dl>
+</li>
+<li><dl class="section return"><dt>Returns</dt><dd>int The integer average (truncated, not rounded) of the 10 values </dd></dl>
 </li>
 </ul>
 
@@ -277,11 +279,12 @@ Variables</h2></td></tr>
 <ul>
 <li><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">n</td><td>The integer to test (values &lt;= 1 always return false) </td></tr>
+    <tr><td class="paramname">n</td><td>The integer to test (values &lt;= 1 always return false)</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>bool True if n is prime, false otherwise </dd></dl>
+</li>
+<li><dl class="section return"><dt>Returns</dt><dd>bool True if n is prime, false otherwise </dd></dl>
 </li>
 </ul>
 
@@ -334,11 +337,12 @@ Variables</h2></td></tr>
 <li>Refreshes the I2C LCD every 250 ms only when either value has changed since the last update, avoiding unnecessary redraws.</li>
 <li><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">arg</td><td>Unused task parameter (required by FreeRTOS API) </td></tr>
+    <tr><td class="paramname">arg</td><td>Unused task parameter (required by FreeRTOS API)</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>void (FreeRTOS tasks never return) </dd></dl>
+</li>
+<li><dl class="section return"><dt>Returns</dt><dd>void (FreeRTOS tasks never return) </dd></dl>
 </li>
 </ul>
 
@@ -364,11 +368,12 @@ Variables</h2></td></tr>
 <li>Stores the value in a 10-element circular buffer, and updates the global lightLevel and SMA under semaphore protection.</li>
 <li><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">arg</td><td>Unused task parameter (required by FreeRTOS API) </td></tr>
+    <tr><td class="paramname">arg</td><td>Unused task parameter (required by FreeRTOS API)</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>void (FreeRTOS tasks never return) </dd></dl>
+</li>
+<li><dl class="section return"><dt>Returns</dt><dd>void (FreeRTOS tasks never return) </dd></dl>
 </li>
 </ul>
 
@@ -413,11 +418,12 @@ Variables</h2></td></tr>
 <li>Operates independently of the semaphore. Yields 1 ms per iteration to prevent starving the FreeRTOS IDLE task.</li>
 <li><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">arg</td><td>Unused task parameter (required by FreeRTOS API) </td></tr>
+    <tr><td class="paramname">arg</td><td>Unused task parameter (required by FreeRTOS API)</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>void (FreeRTOS tasks never return) </dd></dl>
+</li>
+<li><dl class="section return"><dt>Returns</dt><dd>void (FreeRTOS tasks never return) </dd></dl>
 </li>
 </ul>
 
