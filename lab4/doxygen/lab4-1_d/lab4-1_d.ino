@@ -10,7 +10,6 @@
  */
 
 // ================== Includes ==================
-#include <Wire.h>
 #include <LiquidCrystal_I2C.h>
 
 // ================== Macros ==================
@@ -19,61 +18,57 @@
 // ================== Global Variables ==================
 
 /** Total execution durations for each task, expressed in FreeRTOS ticks. Used to reset remaining times. */
-const TickType_t ledTaskExecutionTime = 48000 / portTICK_PERIOD_MS;      ///< 48 seconds
-const TickType_t counterTaskExecutionTime = 20000 / portTICK_PERIOD_MS;  ///< 20 seconds
-const TickType_t alphabetTaskExecutionTime = 26000 / portTICK_PERIOD_MS; ///< 26 seconds
-
+const TickType_t totalTimes[3] = {48000 / portTICK_PERIOD_MS, 20000 / portTICK_PERIOD_MS, 26000 / portTICK_PERIOD_MS};
 /** Countdown timers tracking how much execution time each task still has left. */
-volatile TickType_t remainingLedTime = ledTaskExecutionTime;
-volatile TickType_t remainingCounterTime = counterTaskExecutionTime;
-volatile TickType_t remainingAlphabetTime = alphabetTaskExecutionTime;
-
+volatile TickType_t remainingTimes[3] = {48000 / portTICK_PERIOD_MS, 20000 / portTICK_PERIOD_MS, 26000 / portTICK_PERIOD_MS};
 /** Task handles allow the scheduler to suspend/resume individual tasks by reference. */
-TaskHandle_t ledTaskHandle;
-TaskHandle_t counterTaskHandle;
-TaskHandle_t alphabetTaskHandle;
+TaskHandle_t taskHandles[3];
+/** Whether each task is currently sleeping/waiting. */
+volatile bool isSleeping[3] = {false, false, false};
 
 /** LCD object using I2C address 0x27, configured for a 16-column × 2-row display. */
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
-// ================== Function Prototypes ==================
-void ledTask(void *arg);
-void counterTask(void *arg);
-void alphabetTask(void *arg);
-void scheduleTasks(void *arg);
-
-// ================== Function Implementations ==================
+// ================== Functions ==================
+/**
+ * @brief Function that delays a task.
+ * * @param ms Number of milliseconds to delay
+ * * @param index Index of the task to delay
+ * * @return void
+ */
+void taskDelay(int ms, int index) {
+   isSleeping[index] = true;
+   vTaskDelay(ms / portTICK_PERIOD_MS);
+   isSleeping[index] = false;
+   remainingTimes[index] -= ms / portTICK_PERIOD_MS;
+}
 
 /**
  * @brief FreeRTOS task that blinks an LED in a fixed pattern.
  * * Blinks an LED (2 s ON, 0.95 s OFF, 0.10 s ON, 0.95 s OFF) repeated 12 times for a
  * total of 48 seconds. After completing one full cycle the task suspends itself, 
  * waiting for the scheduler to resume it in the next round.
- * * @param arg Unused task parameter (required by FreeRTOS API)
- * @return void (FreeRTOS tasks never return)
+ * * @param* arg Unused task parameter (required by FreeRTOS API)
+ * * @return void (FreeRTOS tasks never return)
  */
 void ledTask(void *arg) {
-    pinMode(LED_PIN, OUTPUT);
-    while (1) {
-        for (int i = 0; i < 12; i++) {
-            digitalWrite(LED_PIN, HIGH);
-            vTaskDelay(2000 / portTICK_PERIOD_MS);
-            remainingLedTime -= (2000 / portTICK_PERIOD_MS);
+   while (1) {
+      for (int i = 0; i < 12; i++) {
+         digitalWrite(LED_PIN, HIGH);
+         taskDelay(2000, 0);
 
-            digitalWrite(LED_PIN, LOW);
-            vTaskDelay(950 / portTICK_PERIOD_MS);
-            remainingLedTime -= (950 / portTICK_PERIOD_MS);
+         digitalWrite(LED_PIN, LOW);
+         taskDelay(950, 0);
 
-            digitalWrite(LED_PIN, HIGH);
-            vTaskDelay(100 / portTICK_PERIOD_MS);
-            remainingLedTime -= (100 / portTICK_PERIOD_MS);
+         digitalWrite(LED_PIN, HIGH);
+         taskDelay(100, 0);
 
-            digitalWrite(LED_PIN, LOW);
-            vTaskDelay(950 / portTICK_PERIOD_MS);
-            remainingLedTime -= (950 / portTICK_PERIOD_MS);
-        }
-        vTaskSuspend(NULL);
-    }
+         digitalWrite(LED_PIN, LOW);
+         taskDelay(950, 0);
+      }
+
+      vTaskSuspend(NULL); 
+   }
 }
 
 /**
@@ -89,10 +84,11 @@ void counterTask(void *arg) {
          lcd.setCursor(0, 0);
          lcd.print("Count: ");
          lcd.print(i);
-         lcd.print("    "); 
-         vTaskDelay(1000 / portTICK_PERIOD_MS);
-         remainingCounterTime -= (1000 / portTICK_PERIOD_MS);
+         lcd.print("    ");
+
+         taskDelay(1000, 1);
       }
+
       vTaskSuspend(NULL);
    }
 }
@@ -108,9 +104,10 @@ void alphabetTask(void *arg) {
    while (1) {
       for (char c = 'A'; c <= 'Z'; c += 1) {
          Serial.printf("%c ", c);
-         vTaskDelay(1000 / portTICK_PERIOD_MS);
-         remainingAlphabetTime -= (1000 / portTICK_PERIOD_MS);
+         taskDelay(1000, 2);
       }
+      Serial.println();
+
       vTaskSuspend(NULL);
    }
 }
@@ -125,42 +122,31 @@ void alphabetTask(void *arg) {
  */
 void scheduleTasks(void *arg) {
    while (1) {
-      if (remainingLedTime <= 0 && remainingCounterTime <= 0 && remainingAlphabetTime <= 0) {
-         remainingLedTime = ledTaskExecutionTime;
-         remainingCounterTime = counterTaskExecutionTime;
-         remainingAlphabetTime = alphabetTaskExecutionTime;
+      if (remainingTimes[0] <= 0 && remainingTimes[1] <= 0 && remainingTimes[2] <= 0) {
+         // Reset the remaining times back to their initial execution times
+         for (int i = 0; i < 3; i++) {
+            remainingTimes[i] = totalTimes[i];
+            isSleeping[i] = false;
+         }
       }
 
-      TickType_t minTime = 0xFFFFFFFF;
-      int shortestTask = -1; // 0: LED, 1: Counter, 2: Alphabet
-
-      if (remainingLedTime > 0 && remainingLedTime < minTime) {
-         minTime = remainingLedTime;
-         shortestTask = 0;
-      }
-      if (remainingCounterTime > 0 && remainingCounterTime < minTime) {
-         minTime = remainingCounterTime;
-         shortestTask = 1;
-      }
-      if (remainingAlphabetTime > 0 && remainingAlphabetTime < minTime) {
-         minTime = remainingAlphabetTime;
-         shortestTask = 2;
+      TickType_t minTime = 0xFFFFFFFF; // Set to absolute maximum initially
+      int shortestTask = -1;           // 0: LED, 1: Counter, 2: Alphabet
+      for (int i = 0; i < 3; i++) {
+         TickType_t time = remainingTimes[i];
+         if (time > 0 && !isSleeping[i] && time < minTime) {
+            minTime = time;
+            shortestTask = i;
+         }
       }
 
-      if (shortestTask == 0) {
-         vTaskResume(ledTaskHandle);
-         vTaskSuspend(counterTaskHandle);
-         vTaskSuspend(alphabetTaskHandle);
-      } 
-      else if (shortestTask == 1) {
-         vTaskSuspend(ledTaskHandle);
-         vTaskResume(counterTaskHandle);
-         vTaskSuspend(alphabetTaskHandle);
-      } 
-      else if (shortestTask == 2) {
-         vTaskSuspend(ledTaskHandle);
-         vTaskSuspend(counterTaskHandle);
-         vTaskResume(alphabetTaskHandle);
+      if (shortestTask != -1) {
+         vTaskResume(taskHandles[shortestTask]);
+         for (int i = 0; i < 3; i++) {
+            if (i != shortestTask && remainingTimes[i] > 0 && !isSleeping[i]) {
+               vTaskSuspend(taskHandles[i]);
+            }
+         }
       }
 
       vTaskDelay(100 / portTICK_PERIOD_MS);
@@ -172,15 +158,18 @@ void scheduleTasks(void *arg) {
  */
 void setup() {
    Serial.begin(115200);
+
+   pinMode(LED_PIN, OUTPUT);
+
    lcd.init();
    lcd.backlight();
    lcd.setCursor(0, 0);
    lcd.clear();
 
+   xTaskCreatePinnedToCore(ledTask, "LED Task", 2048, NULL, 1, &taskHandles[0], 0);
+   xTaskCreatePinnedToCore(counterTask, "Counter Task", 2048, NULL, 1, &taskHandles[1], 0);
+   xTaskCreatePinnedToCore(alphabetTask, "Alphabet Task", 2048, NULL, 1, &taskHandles[2], 0);
    xTaskCreatePinnedToCore(scheduleTasks, "Scheduler Task", 2048, NULL, 2, NULL, 0);
-   xTaskCreatePinnedToCore(ledTask, "LED Task", 2048, NULL, 1, &ledTaskHandle, 0);
-   xTaskCreatePinnedToCore(counterTask, "Counter Task", 2048, NULL, 1, &counterTaskHandle, 0);
-   xTaskCreatePinnedToCore(alphabetTask, "Alphabet Task", 2048, NULL, 1, &alphabetTaskHandle, 0);
 }
 
 /**

@@ -17,31 +17,19 @@
 #define LED_PIN 4
 
 // ================== Global Variables ==================
-// // Total times for tasks
-// const TickType_t ledTaskExecutionTime = 48000 / portTICK_PERIOD_MS;      // 48 seconds
-// const TickType_t counterTaskExecutionTime = 20000 / portTICK_PERIOD_MS;  // 20 seconds
-// const TickType_t alphabetTaskExecutionTime = 26000 / portTICK_PERIOD_MS; // 26 seconds
-
-// // Remaining Execution Times
-// volatile TickType_t remainingLedTime = ledTaskExecutionTime;
-// volatile TickType_t remainingCounterTime = counterTaskExecutionTime;
-// volatile TickType_t remainingAlphabetTime = alphabetTaskExecutionTime;
-
-// // Task Handles
-// TaskHandle_t ledTaskHandle;
-// TaskHandle_t counterTaskHandle;
-// TaskHandle_t alphabetTaskHandle;
-
 const TickType_t totalTimes[3] = {48000 / portTICK_PERIOD_MS, 20000 / portTICK_PERIOD_MS, 26000 / portTICK_PERIOD_MS};
 volatile TickType_t remainingTimes[3] = {48000 / portTICK_PERIOD_MS, 20000 / portTICK_PERIOD_MS, 26000 / portTICK_PERIOD_MS};
 TaskHandle_t taskHandles[3];
+volatile bool isSleeping[3] = {false, false, false};
 
 // Initialize LCD
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // ================== Functions ==================
 void taskDelay(int ms, int index) {
+   isSleeping[index] = true;
    vTaskDelay(ms / portTICK_PERIOD_MS);
+   isSleeping[index] = false;
    remainingTimes[index] -= ms / portTICK_PERIOD_MS;
 }
 
@@ -129,7 +117,8 @@ void scheduleTasks(void *arg) {
       if (remainingTimes[0] <= 0 && remainingTimes[1] <= 0 && remainingTimes[2] <= 0) {
          // Reset the remaining times back to their initial execution times
          for (int i = 0; i < 3; i++) {
-             remainingTimes[i] = totalTimes[i];
+            remainingTimes[i] = totalTimes[i];
+            isSleeping[i] = false;
          }
       }
 
@@ -138,7 +127,7 @@ void scheduleTasks(void *arg) {
       int shortestTask = -1;           // 0: LED, 1: Counter, 2: Alphabet
       for (int i = 0; i < 3; i++) {
          TickType_t time = remainingTimes[i];
-         if (time > 0 && time < minTime) {
+         if (time > 0 && !isSleeping[i] && time < minTime) {
             minTime = time;
             shortestTask = i;
          }
@@ -146,10 +135,13 @@ void scheduleTasks(void *arg) {
 
       if (shortestTask != -1) {
          vTaskResume(taskHandles[shortestTask]);
-         vTaskSuspend(taskHandles[(shortestTask + 1) % 3]);
-         vTaskSuspend(taskHandles[(shortestTask + 2) % 3]);
+         for (int i = 0; i < 3; i++) {
+            if (i != shortestTask && remainingTimes[i] > 0 && !isSleeping[i]) {
+               vTaskSuspend(taskHandles[i]);
+            }
+         }
       }
-
+      
       vTaskDelay(100 / portTICK_PERIOD_MS);
    }
 }
